@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
-import { Box, Stack, TextField, Typography, Button,Modal } from '@mui/material';
+import { Box, Stack, TextField, Typography, Button, Modal, MenuItem, Select, FormControl, InputLabel, Snackbar, Alert } from '@mui/material';
 import { collection, getDoc, getDocs, query, setDoc, doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "@/firebase";
 
@@ -12,6 +12,11 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
   useEffect(() => {
     updateInventory();
@@ -39,10 +44,18 @@ export default function Home() {
       const { quantity } = docSnap.data();
       if (quantity === 1) {
         await deleteDoc(docRef);
+        setSnackbarMessage(`${item} removed from inventory.`);
+        setSnackbarSeverity('success');
       } else {
         await setDoc(docRef, { quantity: quantity - 1 });
+        setSnackbarMessage(`${item} quantity decreased.`);
+        setSnackbarSeverity('success');
       }
+    } else {
+      setSnackbarMessage(`Item ${item} does not exist.`);
+      setSnackbarSeverity('error');
     }
+    setSnackbarOpen(true);
     await updateInventory();
   };
 
@@ -56,13 +69,46 @@ export default function Home() {
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
       await setDoc(docRef, { quantity: quantity + 1 });
+      setSnackbarMessage(`${itemName} quantity increased.`);
+      setSnackbarSeverity('success');
     } else {
       await setDoc(docRef, { quantity: 1 });
+      setSnackbarMessage(`${itemName} added to inventory.`);
+      setSnackbarSeverity('success');
     }
-    await updateInventory();
+    setSnackbarOpen(true);
     setItemName('');
     handleClose();
+    await updateInventory();
   };
+
+  const handleSearch = () => {
+    const filteredInventory = inventory.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (filteredInventory.length === 0) {
+      setSnackbarMessage('No items found.');
+      setSnackbarSeverity('info');
+      setSnackbarOpen(true);
+    }
+    setInventory(filteredInventory);
+  };
+
+  const handleSort = (field) => {
+    const sortedInventory = [...inventory].sort((a, b) => {
+      if (field === 'name') {
+        return a.name.localeCompare(b.name);
+      } else if (field === 'quantity') {
+        return a.quantity - b.quantity;
+      }
+      return 0;
+    });
+    setInventory(sortedInventory);
+  };
+
+  useEffect(() => {
+    handleSort(sortField);
+  }, [sortField]);
+
+  const handleSnackbarClose = () => setSnackbarOpen(false);
 
   return (
     <Box
@@ -113,6 +159,39 @@ export default function Home() {
           </Button>
         </Box>
       </Modal>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Box
+          sx={{
+            width: '300px', // Fixed width for the search box
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1
+          }}
+        >
+          <TextField
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            label="Search Items"
+            fullWidth
+          />
+          <Button variant="contained" onClick={handleSearch}>
+            Search
+          </Button>
+        </Box>
+        <FormControl sx={{ width: '200px' }}>
+          <InputLabel>Sort By</InputLabel>
+          <Select
+            value={sortField}
+            onChange={(e) => setSortField(e.target.value)}
+            label="Sort By"
+            fullWidth
+          >
+            <MenuItem value="name">Name</MenuItem>
+            <MenuItem value="quantity">Quantity</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
       <Button variant="contained" onClick={handleOpen}>
         Add New Item
       </Button>
@@ -164,6 +243,15 @@ export default function Home() {
           ))}
         </Stack>
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
