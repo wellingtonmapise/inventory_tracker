@@ -1,3 +1,19 @@
+# Inventory Tracker
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Project Overview
+
+**Inventory Tracker** is a web application designed to help users manage and track their inventory efficiently. The application provides a user-friendly interface to perform various inventory management tasks, including:
+
+- **Adding New Items**: Easily add new items to the inventory with details such as name, quantity, and location.
+- **Updating Inventory**: Update item quantities and details as inventory levels change.
+- **Searching and Filtering**: Quickly find items using search and filter options based on various criteria.
+- **Viewing Reports**: Generate and view detailed reports on inventory status and history.
+- **User Authentication**: Secure login and registration for users to manage their own inventory data.
+
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
