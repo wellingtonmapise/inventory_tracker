@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"app/page.js -> @mui/material/Modal\":{\"id\":\"app/page.js -> @mui/material/Modal\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_mui_material_Modal_index_js.js\"]}}"
